@@ -1,3 +1,4 @@
+from database_utils import DatabaseConnector
 from sqlalchemy import create_engine, MetaData
 import yaml
 import pandas as pd
@@ -13,16 +14,17 @@ class DataExtractor:
         Returns:
             dict: A dictionary containing the database credentials.
         """
-        try:
-            with open(file_path, 'r') as file:
-                creds = yaml.safe_load(file)
-                return creds
-        except FileNotFoundError:
-            print(f"File '{file_path}' not found.")
-            return {}
-        except yaml.YAMLError as e:
-            print(f"Error parsing YAML file: {e}")
-            return {}
+        # try:
+        with open(file_path, 'r') as file:
+            creds = yaml.safe_load(file)
+            print(creds)
+            return creds
+        # except FileNotFoundError:
+        #     print(f"File {file_path} not found")
+        #     return {}
+        # except yaml.YAMLError as e:
+        #     print(f"Error parsing YAML file: {e}")
+        #     return {}
 
     def init_db_engine(self, file_path):
         creds = self.read_db_creds(file_path)
@@ -31,7 +33,7 @@ class DataExtractor:
         RDS_USER = creds['RDS_USER']
         RDS_DATABASE = creds['RDS_DATABASE']
         RDS_PORT = creds['RDS_PORT']
-        engine = create_engine(f"postgresql://{RDS_USER}:{RDS_PASSWORD}@{RDS_HOST}:{RDS_PORT}/{RDS_DATABASE}")
+        engine = create_engine(f"postgresql+psycopg2://{RDS_USER}:{RDS_PASSWORD}@{RDS_HOST}:{RDS_PORT}/{RDS_DATABASE}")
         return engine
 
     def list_db_tables(self, file_path):
@@ -61,14 +63,13 @@ class DataExtractor:
             pandas.DataFrame: DataFrame containing the extracted data.
         """
         # Establish a connection to the database using DatabaseConnector
-        engine = connector.get_engine()
+        # engine = connector.get_engine()
         
-        # Read the specified table into a DataFrame
-        query = f"SELECT * FROM {table_name}"
-        df = pd.read_sql(query, engine)
+        # # Read the specified table into a DataFrame
+        # query = f"SELECT * FROM {table_name}"
+        df = pd.read_sql_table(table_name,connector)
         
         return df
-
 # Create an instance of DataExtractor
 extractor = DataExtractor()
 
@@ -81,12 +82,18 @@ print("Tables in the database:")
 for table in result_tables:
     print(table)
 
-# Assuming you have an instance of DatabaseConnector named 'connector'
-# and you have the table name containing user data
+# Assuming you have the table name containing user data
 table_name = "legacy_users"
 
+# Define the database URI (replace with your actual database URI)
+db_uri = "postgresql://postgres:Harvey16@localhost:5432/Pagila"
+
+source_engine = extractor.init_db_engine(file_path)
+# Create an instance of DatabaseConnector with the appropriate database URI
+connector = DatabaseConnector(db_uri)
+
 # Call the read_rds_table method to extract the specified table
-data_frame = extractor.read_rds_table(connector, table_name)
+data_frame = extractor.read_rds_table(source_engine, table_name)
 
 # Print the DataFrame
 print(data_frame)
