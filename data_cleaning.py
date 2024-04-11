@@ -1,7 +1,15 @@
 import pandas as pd
-from datetime import datetime
+from data_extraction import DataExtractor
+import csv
 
 class DataCleaning:
+    def __init__(self, file_path):
+        self.extractor = DataExtractor()
+        self.source_engine = self.extractor.init_db_engine(file_path)
+        self.table_name = "legacy_users"  # table name containing user data
+        
+
+
     def clean_user_data(self, df):
         """
         Clean the user data by handling NULL values, errors with dates,
@@ -17,7 +25,7 @@ class DataCleaning:
         df = df.dropna()
 
         # Convert date columns to datetime format
-        date_columns = ['birthdate', 'registration_date']
+        date_columns = ['date_of_birth', 'join_date']
         for col in date_columns:
             df[col] = pd.to_datetime(df[col], errors='coerce')
 
@@ -35,11 +43,19 @@ class DataCleaning:
         # Return the cleaned DataFrame
         return df
 
-# Example usage:
-# Create an instance of DataCleaning
-cleaner = DataCleaning()
 
-# Assuming df is the DataFrame containing user data
+
+# Path to the db_creds.yaml file
+file_path = '/Users/User/MRDC/Multinational-Retail-Data-Centralisation/db_creds.yaml'
+# Create an instance of DataExtractor
+extractor = DataExtractor()
+
+# Define df by reading data from the database
+df = extractor.read_rds_table(extractor.init_db_engine(file_path), "legacy_users")
+
+# Create an instance of DataCleaning
+cleaner = DataCleaning(file_path)
+
 # Clean the user data
 cleaned_df = cleaner.clean_user_data(df)
 

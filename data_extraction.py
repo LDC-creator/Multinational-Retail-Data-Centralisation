@@ -2,6 +2,7 @@ from database_utils import DatabaseConnector
 from sqlalchemy import create_engine, MetaData
 import yaml
 import pandas as pd
+import csv
 
 class DataExtractor:
     def read_db_creds(self, file_path):
@@ -70,7 +71,12 @@ class DataExtractor:
         df = pd.read_sql_table(table_name,connector)
         
         return df
-# Create an instance of DataExtractor
+    
+
+
+
+
+    # Create an instance of DataExtractor
 extractor = DataExtractor()
 
 # Path to the db_creds.yaml file
@@ -98,4 +104,19 @@ data_frame = extractor.read_rds_table(source_engine, table_name)
 # Print the DataFrame
 print(data_frame)
 
-# upload to git hub checking - delete after
+# List tables from the database
+tables = extractor.list_db_tables(file_path)
+
+# Initialize the database engine
+
+
+# Loop through each table and extract data to a CSV file
+for table_name in tables:
+    # Call the read_rds_table method to extract the specified table
+    data_frame = extractor.read_rds_table(source_engine, table_name)
+    
+    # Define the file name for the CSV file
+    csv_file_name = f"{table_name}.csv"
+    
+    # Save the DataFrame to a CSV file
+    data_frame.to_csv(csv_file_name, index=False)
