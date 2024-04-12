@@ -91,7 +91,7 @@ for table in result_tables:
 # Assuming you have the table name containing user data
 table_name = "legacy_users"
 
-# Define the database URI (replace with your actual database URI)
+# Define the database URI
 db_uri = "postgresql://postgres:Harvey16@localhost:5432/Pagila"
 
 source_engine = extractor.init_db_engine(file_path)
@@ -111,12 +111,12 @@ tables = extractor.list_db_tables(file_path)
 
 
 # Loop through each table and extract data to a CSV file
-for table_name in tables:
-    # Call the read_rds_table method to extract the specified table
-    data_frame = extractor.read_rds_table(source_engine, table_name)
+# for table_name in tables:
+#     # Call the read_rds_table method to extract the specified table
+#     data_frame = extractor.read_rds_table(source_engine, table_name)
     
-    # Define the file name for the CSV file
-    csv_file_name = f"{table_name}.csv"
+#     # Define the file name for the CSV file
+#     csv_file_name = f"{table_name}.csv"
     
-    # Save the DataFrame to a CSV file
-    data_frame.to_csv(csv_file_name, index=False)
+#     # Save the DataFrame to a CSV file
+#     data_frame.to_csv(csv_file_name, index=False)
