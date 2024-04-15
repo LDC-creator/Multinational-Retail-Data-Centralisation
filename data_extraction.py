@@ -2,7 +2,7 @@ from database_utils import DatabaseConnector
 from sqlalchemy import create_engine, MetaData
 import yaml
 import pandas as pd
-import csv
+import tabula
 
 class DataExtractor:
     def read_db_creds(self, file_path):
@@ -72,7 +72,22 @@ class DataExtractor:
         
         return df
     
-
+    def retrieve_pdf_data(self, pdf_link):
+        # Use tabula-py to read data from the PDF file
+        tables = tabula.read_pdf(pdf_link, pages="all", multiple_tables=True)
+        
+        # Initialize an empty list to store DataFrames for each table
+        dfs = []
+        
+        # Convert each table to a DataFrame and append to the list
+        for table in tables:
+            df = pd.DataFrame(table)
+            dfs.append(df)
+        
+        # Concatenate all DataFrames in the list vertically
+        pdf_df = pd.concat(dfs, ignore_index=True)
+        
+        return pdf_df
 
 
 
@@ -107,7 +122,18 @@ print(data_frame)
 # List tables from the database
 tables = extractor.list_db_tables(file_path)
 
-# Initialize the database engine
+# link to pdf document(tabula data) 
+pdf_link = "https://data-handling-public.s3.eu-west-1.amazonaws.com/card_details.pdf"
+
+pdf_doc = extractor.retrieve_pdf_data(pdf_link)
+
+print (f"this is the pdf doc{pdf_doc}")
+
+
+#java_export local file path
+
+JAVA_HOME="/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home"
+
 
 
 # Loop through each table and extract data to a CSV file
