@@ -46,7 +46,7 @@ class DataCleaning:
         engine = sqlalchemy.create_engine(conn_str)
         
         # Upload cleaned data to the database with the table name dim_users
-        cleaned_card_data.to_sql(name='dim_card_details', con=engine, if_exists='replace', index=False)
+        # cleaned_card_data.to_sql(name='dim_card_details', con=engine, if_exists='replace', index=False)
 
 
 
@@ -64,19 +64,17 @@ class DataCleaning:
         # Drop rows with NULL values
         df = df.dropna()
 
-        # Convert date columns to datetime format
-        date_columns = ['expiry_date', 'date_payment_confirmed']
-        for col in date_columns:
-            pd.options.mode.chained_assignment = None
-            df[col] = pd.to_datetime(df[col],format='%Y-%m-%d', errors='coerce')
+        # Remove rows with invalid dates in date_payment_confirmed column
+        df.loc[:, 'date_payment_confirmed'] = pd.to_datetime(df['date_payment_confirmed'], format='%Y-%m-%d', errors='coerce')
 
-        # Remove rows with invalid dates
-        df = df.dropna(subset=date_columns)
 
-        # Remove rows with incorrect card numbers or card providers
-        # (You may need to specify conditions based on your data)
+        # Remove rows with invalid expiry_date
+        df = df.dropna(subset=['expiry_date'])
 
-        # Additional cleaning steps based on specific criteria
+        # Ensure card_number column contains only numeric values
+        df = df[df['card_number'].str.isnumeric()]
+
+        pd.options.mode.chained_assignment = None
 
         # Return the cleaned DataFrame
         return df
@@ -96,7 +94,6 @@ class DataCleaning:
 
 # Create an instance of DataCleaning
 cleaner = DataCleaning()
-
 # # Clean the user data
 # cleaned_df = cleaner.clean_user_data(df)
 
@@ -104,16 +101,16 @@ cleaner = DataCleaning()
 
 
 # Load your card data into a DataFrame (replace this with your actual data)
-card_data = pd.read_csv('/Users/User/MRDC/Multinational-Retail-Data-Centralisation/dim_card_details.csv')
+# card_data = pd.read_csv('/Users/User/MRDC/Multinational-Retail-Data-Centralisation/dim_card_details.csv')
 
-# Clean the card data
-cleaned_card_data = cleaner.clean_card_data(card_data)
+# # Clean the card data
+# cleaned_card_data = cleaner.clean_card_data(card_data)
 
-# Now cleaned_card_data contains the cleaned card data
+# # Now cleaned_card_data contains the cleaned card data
 
 
-# # uploading the clean data to DB
-cleaner.upload_to_db(cleaned_card_data)
+# # # uploading the clean data to DB
+# cleaner.upload_to_db(cleaned_card_data)
 
 
 
