@@ -6,8 +6,14 @@ import tabula
 import requests
 import json
 import numpy as np
+import boto3
+from io import StringIO
 
 class DataExtractor:
+
+    def __init__(self):
+        self.s3_client = boto3.client('s3')
+
 
     def list_number_of_stores(self, number_of_stores_endpoint, headers):
         """
@@ -38,20 +44,22 @@ class DataExtractor:
         #     print(f"Exception occurred: {e}")
         return response["number_stores"]
     
-    def retrieve_stores_data(self, store_endpoint, headers,num_stores):
+    def retrieve_stores_data(self, store_endpoint, headers, num_stores):
         """
         Retrieve data for all stores from the API and save it in a pandas DataFrame.
 
         Args:
             store_endpoint (str): The URL endpoint to retrieve store data.
             headers (dict): Dictionary containing the headers required to access the API.
+            num_stores (int): Number of stores to retrieve.
+            csv_filename (str): Name of the CSV file to save the data.
 
         Returns:
             pandas.DataFrame: DataFrame containing store data.
         """
         list_of_df = []
 
-        for i in range(0,num_stores):
+        for i in range(num_stores):
             try:
                 # Send GET request to the API endpoint
                 response = requests.get(f"{store_endpoint}{i}", headers=headers)
@@ -60,21 +68,21 @@ class DataExtractor:
                 if response.status_code == 200:
                     # Parse the JSON response and convert it to a DataFrame
                     store_data = response.json()
-                    print(store_data)
-                    df = pd.DataFrame(store_data,index = [np.nan])
+                    df = pd.DataFrame(store_data, index=[np.nan])
                     list_of_df.append(df)
                 else:
                     print(f"Failed to retrieve store data. Status code: {response.status_code}")
-                    return None
             except requests.RequestException as e:
                 print(f"Exception occurred: {e}")
-            return None
-        
+
+        # Concatenate all DataFrames in the list vertically
         final_df = pd.concat(list_of_df)
+
+        # # Save DataFrame to a CSV file
+        # final_df.to_csv(csv_filename, index=False)
 
         return final_df
 
-    print(self.final_df)
     def read_db_creds(self, file_path):
         """
         Read database credentials from a YAML file.
@@ -158,6 +166,42 @@ class DataExtractor:
         pdf_df = pd.concat(dfs, ignore_index=True)
         
         return pdf_df
+    
+    def extract_from_s3(self, s3_address, output_csv_path):
+        try:
+            # Parse the S3 address
+            bucket_name, key = self.parse_s3_address(s3_address)
+            
+            # Get the object from the S3 bucket
+            response = self.s3_client.get_object(Bucket=bucket_name, Key=key)
+            # Read the CSV data from the object
+            csv_data = response['Body'].read().decode('utf-8')
+            
+            # Convert the CSV data to a pandas DataFrame
+            df = pd.read_csv(StringIO(csv_data))
+
+            # Save the DataFrame to a CSV file
+            df.to_csv(output_csv_path, index=False)
+            
+            return df
+        except Exception as e:
+            print("An error occurred:", e)
+
+    def parse_s3_address(self, s3_address):
+        # Remove "s3://" from the beginning of the address
+        s3_address = s3_address.replace("s3://", "")
+        # Split the address into bucket name and key
+        parts = s3_address.split("/")
+        bucket_name = parts[0]
+        key = "/".join(parts[1:])
+        return bucket_name, key
+
+# Example usage
+extractor = DataExtractor()
+output_csv_path = '/Users/User/MRDC/Multinational-Retail-Data-Centralisation/aws_products.csv'
+s3_address = "s3://data-handling-public/products.csv"
+data_df = extractor.extract_from_s3(s3_address, output_csv_path)
+print(data_df)
 
 
 
@@ -219,19 +263,27 @@ class DataExtractor:
 
 
 # Example usage
-extractor = DataExtractor()
-header_details = {'x-api-key': 'yFBQbwXe9J3sd6zWVAMrK6lcxxr0q1lr2PT6DDMX'}
-number_of_stores_endpoint = 'https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/number_stores'
+# extractor = DataExtractor()
+# header_details = {'x-api-key': 'yFBQbwXe9J3sd6zWVAMrK6lcxxr0q1lr2PT6DDMX'}
+# number_of_stores_endpoint = 'https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/number_stores'
 
-number_of_stores = extractor.list_number_of_stores(number_of_stores_endpoint, header_details)
-print("Number of stores:", number_of_stores)
+# number_of_stores = extractor.list_number_of_stores(number_of_stores_endpoint, header_details)
+# print("Number of stores:", number_of_stores)
 
+# # csv_filename = "dim_store_details.csv"
+# store_endpoint = ' https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/store_details/'
 
-store_endpoint = ' https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/store_details/'
+# header_details = {'x-api-key': 'yFBQbwXe9J3sd6zWVAMrK6lcxxr0q1lr2PT6DDMX'}
 
-header_details = {'x-api-key': 'yFBQbwXe9J3sd6zWVAMrK6lcxxr0q1lr2PT6DDMX'}
+# store_data_df = extractor.retrieve_stores_data(store_endpoint, header_details,num_stores=number_of_stores)
 
-store_data_df = extractor.retrieve_stores_data(store_endpoint, header_details,num_stores=number_of_stores)
+# print("Store data DataFrame:")
+# print(store_data_df)
 
-print("Store data DataFrame:")
-print(store_data_df)
+# Specify the S3 bucket name, key (path to the CSV file), and the column to extract
+# bucket_name = 'data-handling-public'
+# key = 'products.csv'
+# column_name = 'column_name_to_extract'
+
+# Call the function to extract data from the CSV file
+# extractor.extract_from_s3(bucket_name, key)
