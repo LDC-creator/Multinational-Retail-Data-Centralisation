@@ -3,6 +3,7 @@ import psycopg2
 import sqlalchemy
 import re
 
+
 class DataCleaning:
 
     def __init__(self):
@@ -44,23 +45,6 @@ class DataCleaning:
         # Return the cleaned DataFrame
         return df
     
-    def upload_to_db(self, cleaned_products_data):
-        """
-        Upload cleaned data to the PostgreSQL database.
-        """
-    try:
-        # Define the connection string
-        conn_str = 'postgresql://postgres:Harvey16@localhost:5432/sales_data'
-        
-        # Create a SQLAlchemy engine
-        engine = sqlalchemy.create_engine(conn_str)
-        
-        # Upload cleaned data to the database with the table name dim_products
-        cleaned_products_data.to_sql(name='dim_products', con=engine, if_exists='replace', index=False)
-        print("Data uploaded to the database successfully.")
-    except Exception as e:
-        print("An error occurred during data upload:", e)
-
 
     def clean_card_data(self, df):
         """
@@ -157,63 +141,76 @@ class DataCleaning:
         except Exception as e:
             print("An error occurred:", e)
 
+    def clean_orders_data(self, orders_filepath):
+
+        # Read the CSV file into a DataFrame
+        orders_df = pd.read_csv(orders_filepath)
+
+        # Remove columns first_name, last_name and 1
+        orders_df = orders_df.drop(columns=['first_name', 'last_name', '1'])
+
+        
+        return orders_df
+    
+    def clean_date_details(self,date_file_path): 
+
+        try:
+
+            # Read the CSV file into a DataFrame
+            date_data = pd.read_csv(date_file_path)
+
+            # Remove rows with missing or NaN values
+            date_data.dropna(inplace=True)
+
+            # Remove duplicates, if any
+            date_data.drop_duplicates(inplace=True)
+
+
+            return date_data
+        except Exception as e:
+            print("An error occurred:", e)
+
+
+    def upload_to_db(self, cleaned_date_data):
+        """
+        Upload cleaned data to the PostgreSQL database.
+        """
+        try:
+            # Define the connection string
+            conn_str = 'postgresql://postgres:Harvey16@localhost:5432/sales_data'
+            
+            # Create a SQLAlchemy engine
+            engine = sqlalchemy.create_engine(conn_str)
+            
+            # Upload cleaned data to the database with the table name specified for use
+            cleaned_date_data.to_sql(name='dim_date_times', con=engine, if_exists='replace', index=False)
+
+            print("Data uploaded to the database successfully.")
+        except Exception as e:
+            print("An error occurred during data upload:", e)
+
 
 
 cleaner = DataCleaning()
-csv_file_path = '/Users/User/MRDC/Multinational-Retail-Data-Centralisation/aws_products.csv'
-cleaned_products_df = cleaner.convert_product_weights(csv_file_path)
 
-# Clean additional erroneous values from the DataFrame
-cleaned_products_df = cleaner.clean_products_data(cleaned_products_df)
+# orders_filepath = '/Users/User/MRDC/Multinational-Retail-Data-Centralisation/orders_table.csv'
 
-# Upload cleaned products data to the database
-cleaner.upload_to_db(cleaned_products_df)
+# cleaned_orders_df = cleaner.clean_orders_data(orders_filepath)
 
-print(cleaned_products_df)
+date_file_path = '/Users/User/MRDC/Multinational-Retail-Data-Centralisation/date_details_data.csv'
 
 
+cleaned_date_data = cleaner.clean_date_details(date_file_path)
 
+# print(cleaned_date_data)
 
+# csv_file_path = '/Users/User/MRDC/Multinational-Retail-Data-Centralisation/aws_products.csv'
 
-# # Path to the CSV file containing user data
-# csv_file_path = '/Users/User/MRDC/Multinational-Retail-Data-Centralisation/legacy_store_details.csv'
+# # Clean the product data
+# cleaned_products_data = cleaner.convert_product_weights(csv_file_path)
+# cleaned_products_data = cleaner.clean_products_data(cleaned_products_data)
 
-# # Read the CSV file into a DataFrame
-# df = pd.read_csv(csv_file_path)
+# # Upload cleaned products data to the database
+cleaner.upload_to_db(cleaned_date_data)
 
-# Create an instance of DataCleaning
-# cleaner = DataCleaning()
-# # Clean the user data
-# cleaned_df = cleaner.clean_user_data(df)
-
-# # Now cleaned_df contains the cleaned user data
-
-
-# Load your card data into a DataFrame (replace this with your actual data)
-# card_data = pd.read_csv('/Users/User/MRDC/Multinational-Retail-Data-Centralisation/dim_card_details.csv')
-
-# # Clean the card data
-# cleaned_card_data = cleaner.clean_card_data(card_data)
-
-# # Now cleaned_card_data contains the cleaned card data
-
-
-
-
-
-# # Path to the CSV file containing store data
-# csv_file_path = '/Users/User/MRDC/Multinational-Retail-Data-Centralisation/dim_store_details.csv'
-
-# # Read the CSV file into a DataFrame
-# df = pd.read_csv(csv_file_path)
-
-# # Call the clean_store_data function to clean the store data
-# cleaned_store_data = cleaner.clean_store_data(df)
-
-# # Now cleaned_store_data contains the cleaned store data
-
-# print(cleaned_store_data)
-
-
-# # # # uploading the clean data to DB
-# cleaner.upload_to_db(cleaned_store_data)
+# print(cleaned_orders_df)
