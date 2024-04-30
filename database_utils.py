@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine
 import psycopg2
 import yaml
+import sqlalchemy
 
 class DatabaseConnector:
     def init_db_engine(self, file_path):
@@ -17,6 +18,27 @@ class DatabaseConnector:
         with open(file_path, 'r') as file:
             creds = yaml.safe_load(file)
             return creds
+        
+    def upload_to_db(self, table_name):
+        """
+        Upload cleaned data to the PostgreSQL database.
+        """
+        try:
+            # Define the connection string
+            conn_str = 'postgresql://postgres:Harvey16@localhost:5432/sales_data'
+            
+            # Create a SQLAlchemy engine
+            engine = sqlalchemy.create_engine(conn_str)
+            
+            # Upload cleaned data to the database with the table name specified for use
+            table_name.to_sql(name=table_name, con=engine, if_exists='replace', index=False)
+
+            print("Data uploaded to the database successfully.")
+        except Exception as e:
+            print("An error occurred during data upload:", e)
+
+
+
         
 
 

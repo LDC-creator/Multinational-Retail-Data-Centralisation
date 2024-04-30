@@ -171,46 +171,27 @@ class DataCleaning:
             print("An error occurred:", e)
 
 
-    def upload_to_db(self, cleaned_date_data):
-        """
-        Upload cleaned data to the PostgreSQL database.
-        """
-        try:
-            # Define the connection string
-            conn_str = 'postgresql://postgres:Harvey16@localhost:5432/sales_data'
-            
-            # Create a SQLAlchemy engine
-            engine = sqlalchemy.create_engine(conn_str)
-            
-            # Upload cleaned data to the database with the table name specified for use
-            cleaned_date_data.to_sql(name='dim_date_times', con=engine, if_exists='replace', index=False)
 
-            print("Data uploaded to the database successfully.")
-        except Exception as e:
-            print("An error occurred during data upload:", e)
+# cleaner = DataCleaning()
+
+# # orders_filepath = '/Users/User/MRDC/Multinational-Retail-Data-Centralisation/orders_table.csv'
+
+# # cleaned_orders_df = cleaner.clean_orders_data(orders_filepath)
+
+# date_file_path = '/Users/User/MRDC/Multinational-Retail-Data-Centralisation/date_details_data.csv'
 
 
+# cleaned_date_data = cleaner.clean_date_details(date_file_path)
 
-cleaner = DataCleaning()
+# # print(cleaned_date_data)
 
-# orders_filepath = '/Users/User/MRDC/Multinational-Retail-Data-Centralisation/orders_table.csv'
+# # csv_file_path = '/Users/User/MRDC/Multinational-Retail-Data-Centralisation/aws_products.csv'
 
-# cleaned_orders_df = cleaner.clean_orders_data(orders_filepath)
+# # # Clean the product data
+# # cleaned_products_data = cleaner.convert_product_weights(csv_file_path)
+# # cleaned_products_data = cleaner.clean_products_data(cleaned_products_data)
 
-date_file_path = '/Users/User/MRDC/Multinational-Retail-Data-Centralisation/date_details_data.csv'
-
-
-cleaned_date_data = cleaner.clean_date_details(date_file_path)
-
-# print(cleaned_date_data)
-
-# csv_file_path = '/Users/User/MRDC/Multinational-Retail-Data-Centralisation/aws_products.csv'
-
-# # Clean the product data
-# cleaned_products_data = cleaner.convert_product_weights(csv_file_path)
-# cleaned_products_data = cleaner.clean_products_data(cleaned_products_data)
-
-# # Upload cleaned products data to the database
-cleaner.upload_to_db(cleaned_date_data)
+# # # Upload cleaned products data to the database
+# cleaner.upload_to_db(cleaned_date_data)
 
 # print(cleaned_orders_df)
