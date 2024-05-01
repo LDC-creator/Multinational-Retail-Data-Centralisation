@@ -141,7 +141,9 @@ class DataCleaning:
         except Exception as e:
             print("An error occurred:", e)
 
-    def clean_orders_data(self, orders_filepath):
+    def clean_orders_data(self,orders_filepath):
+
+        orders_filepath = '/Users/User/MRDC/Multinational-Retail-Data-Centralisation/databases/orders_table.csv'
 
         # Read the CSV file into a DataFrame
         orders_df = pd.read_csv(orders_filepath)
@@ -153,6 +155,9 @@ class DataCleaning:
         return orders_df
     
     def clean_date_details(self,date_file_path): 
+
+        date_file_path = '/Users/User/MRDC/Multinational-Retail-Data-Centralisation/databases/date_details_data.csv'
+        
 
         try:
 
@@ -172,26 +177,3 @@ class DataCleaning:
 
 
 
-# cleaner = DataCleaning()
-
-# # orders_filepath = '/Users/User/MRDC/Multinational-Retail-Data-Centralisation/orders_table.csv'
-
-# # cleaned_orders_df = cleaner.clean_orders_data(orders_filepath)
-
-# date_file_path = '/Users/User/MRDC/Multinational-Retail-Data-Centralisation/date_details_data.csv'
-
-
-# cleaned_date_data = cleaner.clean_date_details(date_file_path)
-
-# # print(cleaned_date_data)
-
-# # csv_file_path = '/Users/User/MRDC/Multinational-Retail-Data-Centralisation/aws_products.csv'
-
-# # # Clean the product data
-# # cleaned_products_data = cleaner.convert_product_weights(csv_file_path)
-# # cleaned_products_data = cleaner.clean_products_data(cleaned_products_data)
-
-# # # Upload cleaned products data to the database
-# cleaner.upload_to_db(cleaned_date_data)
-
-# print(cleaned_orders_df)
