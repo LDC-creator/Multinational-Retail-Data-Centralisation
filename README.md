@@ -18,7 +18,7 @@ As a member of a multinational retail company, you're tasked with centralizing t
 ## Getting Started
 
 ### Dependencies
-- No specific operating system version required
+- PostgreSQL will need to be installed and the version/installastion will depend on your operating system and version. 
 - Libraries required: [numpy, pandas,sqlalchemy,psycopg2,re,os,urllib.parse import urlparse,from io import StringIO,boto3,json,requests,tabula,yaml]
 
 ### Installing
